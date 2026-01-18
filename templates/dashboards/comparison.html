@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}Manual vs Automated Comparison - EDA Application{% endblock %}
+
+{% block content %}
+<div class="header">
+    <div class="header-title">
+        <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"
+                style="vertical-align: middle; margin-right: 8px;">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="12" y1="3" x2="12" y2="21" />
+            </svg>Manual vs Automated EDA Comparison</h1>
+        <p>Demonstrating the value of automated analysis</p>
+    </div>
+</div>
+
+<!-- Key Benefits -->
+<div class="welcome-banner" style="background: linear-gradient(135deg, var(--success), var(--secondary));">
+    <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32"
+            style="vertical-align: middle; margin-right: 8px;">
+            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+            <path
+                d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+        </svg>Why Automated EDA?</h1>
+    <p>
+        This automated EDA platform saves significant time and effort compared to manual data analysis,
+        while ensuring consistent, comprehensive results every time.
+    </p>
+</div>
+
+<!-- Comparison Table -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="12" y1="3" x2="12" y2="21" />
+            </svg>
+            Comparison Overview
+        </h3>
+    </div>uio
+
+    <div class="table-container">
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Criteria</th>
+                    <th style="width: 35%;">Manual EDA</th>
+                    <th style="width: 35%;">Automated EDA</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16" style="vertical-align: middle; margin-right: 4px;">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg> Time Required</td>
+                    <td class="highlight-bad">2-4 hours per dataset</td>
+                    <td class="highlight-good">
+                        < 1 minute per dataset</td>
+                </tr>
+                <tr>
+                    <td><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16" style="vertical-align: middle; margin-right: 4px;">
+                            <line x1="18" y1="20" x2="18" y2="10" />
+                            <line x1="12" y1="20" x2="12" y2="4" />
+                            <line x1="6" y1="20" x2="6" y2="14" />
+                        </svg> Analysis Coverage</td>
+                    <td class="highlight-bad">Depends on analyst's focus</td>
+                    <td class="highlight-good">Comprehensive & systematic</td>
+                </tr>
+                <tr>
+                    <td><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16" style="vertical-align: middle; margin-right: 4px;">
+                            <polyline points="23 4 23 10 17 10" />
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                        </svg> Reproducibility</td>
+                    <td class="highlight-bad">Variable, prone to errors</td>
+                    <td class="highlight-good">100% reproducible</td>
+                </tr>
+                <tr>
+                    <td><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16" style="vertical-align: middle; margin-right: 4px;">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                        </svg> Visualization</td>
+                    <td>Manual chart creation</td>
+                    <td class="highlight-good">Auto-generated interactive charts</td>
+                </tr>
+                <tr>
+                    <td><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16" style="vertical-align: middle; margin-right: 4px;">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                            <polyline points="22 4 12 14.01 9 11.01" />
+                        </svg> Data Cleaning</td>
+                    <td>Multiple manual steps</td>
+                    <td class="highlight-good">One-click cleaning</td>
+                </tr>
+                <tr>
+                    <td><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16" style="vertical-align: middle; margin-right: 4px;">
+                            <circle cx="18" cy="5" r="3" />
+                            <circle cx="6" cy="12" r="3" />
+                            <circle cx="18" cy="19" r="3" />
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                        </svg> Multi-source Integration</td>
+                    <td class="highlight-bad">Complex, error-prone</td>
+                    <td class="highlight-good">Automatic column detection</td>
+                </tr>
+                <tr>
+                    <td><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16" style="vertical-align: middle; margin-right: 4px;">
+                            <path
+                                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg> Insight Generation</td>
+                    <td>Manual interpretation</td>
+                    <td class="highlight-good">AI-powered insights</td>
+                </tr>
+                <tr>
+                    <td><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16" style="vertical-align: middle; margin-right: 4px;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <path d="M14 2v6h6" />
+                        </svg> Report Generation</td>
+                    <td class="highlight-bad">Hours of formatting</td>
+                    <td class="highlight-good">Instant export (HTML/PDF)</td>
+                </tr>
+                <tr>
+                    <td><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16" style="vertical-align: middle; margin-right: 4px;">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg> Skill Required</td>
+                    <td>Python, Pandas, Statistics</td>
+                    <td class="highlight-good">No coding required</td>
+                </tr>
+                <tr>
+                    <td><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+                            height="16" style="vertical-align: middle; margin-right: 4px;">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg> Outlier Detection</td>
+                    <td>Manual statistical tests</td>
+                    <td class="highlight-good">Automatic IQR/Z-score</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Visual Comparison -->
+<div class="grid grid-2 mb-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+                Time Comparison
+            </h3>
+        </div>
+        <div id="timeChart" style="height: 300px;"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                Analysis Coverage
+            </h3>
+        </div>
+        <div id="coverageChart" style="height: 300px;"></div>
+    </div>
+</div>
+
+
+
+<!-- Summary Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                <polyline points="17 6 23 6 23 12" />
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">99%</div>
+            <div class="stat-label">Time Saved</div>
+            <div class="stat-change positive">From hours to seconds</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">100%</div>
+            <div class="stat-label">Reproducibility</div>
+            <div class="stat-change positive">Consistent results</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">8+</div>
+            <div class="stat-label">Analysis Types</div>
+            <div class="stat-change positive">All automated</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon accent">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">0</div>
+            <div class="stat-label">Code Required</div>
+            <div class="stat-change positive">No Python needed</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        renderTimeChart();
+        renderCoverageChart();
+    });
+
+    function renderTimeChart() {
+        const darkMode = window.EDA.darkMode;
+        const theme = darkMode ? chartTheme.dark : chartTheme.light;
+
+        const data = [{
+            type: 'bar',
+            x: ['Manual EDA', 'Automated EDA'],
+            y: [180, 1],  // minutes
+            marker: {
+                color: ['#F44336', '#4CAF50']
+            },
+            text: ['~3 hours', '< 1 minute'],
+            textposition: 'outside'
+        }];
+
+        const layout = {
+            title: { text: 'Time Required (minutes)', font: { color: theme.text } },
+            paper_bgcolor: theme.paper,
+            plot_bgcolor: theme.bg,
+            font: { color: theme.text },
+            yaxis: { title: 'Minutes', gridcolor: theme.grid },
+            xaxis: { gridcolor: theme.grid },
+            showlegend: false
+        };
+
+        Plotly.newPlot('timeChart', data, layout, { responsive: true, displayModeBar: false });
+    }
+
+    function renderCoverageChart() {
+        const darkMode = window.EDA.darkMode;
+        const theme = darkMode ? chartTheme.dark : chartTheme.light;
+
+        const categories = ['Statistics', 'Visualizations', 'Missing Values', 'Correlations', 'Outliers', 'Insights', 'Reports'];
+
+        const data = [
+            {
+                type: 'scatterpolar',
+                r: [70, 50, 60, 40, 50, 30, 40],
+                theta: categories,
+                fill: 'toself',
+                name: 'Manual EDA',
+                marker: { color: '#F44336' }
+            },
+            {
+                type: 'scatterpolar',
+                r: [100, 100, 100, 100, 100, 100, 100],
+                theta: categories,
+                fill: 'toself',
+                name: 'Automated EDA',
+                marker: { color: '#4CAF50' }
+            }
+        ];
+
+        const layout = {
+            polar: {
+                radialaxis: { visible: true, range: [0, 100] },
+                bgcolor: theme.bg
+            },
+            paper_bgcolor: theme.paper,
+            font: { color: theme.text },
+            showlegend: true,
+            legend: { font: { color: theme.text } }
+        };
+
+        Plotly.newPlot('coverageChart', data, layout, { responsive: true, displayModeBar: false });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block title %}Automated EDA - EDA Application{% endblock %}
+
+{% block content %}
+<div class="header">
+    <div class="header-title">
+        <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"
+                style="vertical-align: middle; margin-right: 8px;">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                <line x1="11" y1="8" x2="11" y2="14" />
+                <line x1="8" y1="11" x2="14" y2="11" />
+            </svg>Automated Exploratory Data Analysis</h1>
+        <p>Run comprehensive analysis with one click</p>
+    </div>
+    <div class="header-actions">
+        <select class="form-select" id="datasetSelect" style="min-width: 250px;" onchange="runEDA()">
+            <option value="">Select a dataset...</option>
+        </select>
+    </div>
+</div>
+
+<!-- No Dataset Message -->
+<div id="noDatasetMessage" class="card">
+    <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <h3>Select a Dataset to Analyze</h3>
+        <p>Choose a dataset from the dropdown above to run automated EDA</p>
+        <a href="{{ url_for('dashboard_datasets') }}" class="btn btn-primary mt-2">Upload Dataset</a>
+    </div>
+</div>
+
+<!-- EDA Results -->
+<div id="edaResults" style="display: none;">
+    <!-- Descriptive Statistics -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <line x1="3" y1="9" x2="21" y2="9" />
+                    <line x1="9" y1="21" x2="9" y2="9" />
+                </svg>
+                Descriptive Statistics
+            </h3>
+        </div>
+        <div id="statsTable"></div>
+    </div>
+
+    <!-- Missing Values & Correlation -->
+    <div class="grid grid-2 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    Missing Values
+                </h3>
+            </div>
+            <div id="missingInfo" class="mb-3"></div>
+            <div id="missingChart" style="height: 300px;"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                    </svg>
+                    Correlation Matrix
+                </h3>
+            </div>
+            <div id="correlationChart" style="height: 350px;"></div>
+        </div>
+    </div>
+
+    <!-- Distribution Charts -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+                Column Distributions
+            </h3>
+            <div>
+                <select class="form-select" id="distributionColumn" onchange="showDistribution()"
+                    style="min-width: 200px;">
+                    <option value="">Select column...</option>
+                </select>
+            </div>
+        </div>
+        <div id="distributionChart" style="height: 350px;"></div>
+    </div>
+
+    <!-- Box Plots (Outliers) -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8" />
+                </svg>
+                Outlier Detection (Box Plots)
+            </h3>
+        </div>
+        <div id="outlierInfo" class="mb-3"></div>
+        <div id="boxPlotChart" style="height: 350px;"></div>
+    </div>
+
+    <!-- Group By Analysis -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Group By Analysis
+            </h3>
+        </div>
+        <div class="grid grid-3 mb-3">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Group By Column</label>
+                <select class="form-select" id="groupByColumn">
+                    <option value="">Select...</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Aggregate Column</label>
+                <select class="form-select" id="aggColumn">
+                    <option value="">Select...</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Function</label>
+                <select class="form-select" id="aggFunc" onchange="runGroupBy()">
+                    <option value="mean">Mean</option>
+                    <option value="sum">Sum</option>
+                    <option value="count">Count</option>
+                    <option value="min">Min</option>
+                    <option value="max">Max</option>
+                    <option value="median">Median</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn btn-primary mb-3" onclick="runGroupBy()">Run Analysis</button>
+        <div id="groupByChart" style="height: 300px;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentDatasetId = null;
+    let edaData = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadDatasets();
+    });
+
+    async function loadDatasets() {
+        try {
+            const data = await apiGet('/api/datasets');
+            const select = document.getElementById('datasetSelect');
+            select.innerHTML = '<option value="">Select a dataset...</option>' +
+                (data.datasets || []).map(d => `<option value="${d.id}">${d.name} (${formatNumber(d.rows)} rows)</option>`).join('');
+        } catch (error) {
+            console.error('Failed to load datasets:', error);
+        }
+    }
+
+    async function runEDA() {
+        const datasetId = document.getElementById('datasetSelect').value;
+
+        if (!datasetId) {
+            document.getElementById('noDatasetMessage').style.display = 'block';
+            document.getElementById('edaResults').style.display = 'none';
+            return;
+        }
+
+        currentDatasetId = datasetId;
+        showLoading();
+
+        try {
+            edaData = await apiGet(`/api/eda/${datasetId}`);
+
+            document.getElementById('noDatasetMessage').style.display = 'none';
+            document.getElementById('edaResults').style.display = 'block';
+
+            renderStats();
+            renderMissingValues();
+            await renderCorrelation();
+            await renderBoxPlot();
+            populateColumnSelects();
+
+            showToast('EDA completed successfully!', 'success');
+
+        } catch (error) {
+            console.error('EDA failed:', error);
+            showToast('Failed to run EDA', 'error');
+        }
+
+        hideLoading();
+    }
+
+    function renderStats() {
+        const stats = edaData.descriptive_stats;
+        const columns = Object.keys(stats);
+
+        if (columns.length === 0) {
+            document.getElementById('statsTable').innerHTML = '<p class="text-muted">No numeric columns found</p>';
+            return;
+        }
+
+        // Separate numeric and categorical
+        const numericCols = columns.filter(c => stats[c].mean !== undefined);
+        const catCols = columns.filter(c => stats[c].mean === undefined);
+
+        let html = '';
+
+        if (numericCols.length > 0) {
+            html += `
+            <h4 class="mb-2">Numeric Columns</h4>
+            <div class="table-container mb-4" style="max-height: 300px;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Column</th>
+                            <th>Count</th>
+                            <th>Mean</th>
+                            <th>Std</th>
+                            <th>Min</th>
+                            <th>25%</th>
+                            <th>50%</th>
+                            <th>75%</th>
+                            <th>Max</th>
+                            <th>Skew</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${numericCols.map(col => `
+                            <tr>
+                                <td><strong>${col}</strong></td>
+                                <td>${formatNumber(stats[col].count)}</td>
+                                <td>${formatNumber(stats[col].mean)}</td>
+                                <td>${formatNumber(stats[col].std)}</td>
+                                <td>${formatNumber(stats[col].min)}</td>
+                                <td>${formatNumber(stats[col].q1)}</td>
+                                <td>${formatNumber(stats[col].median)}</td>
+                                <td>${formatNumber(stats[col].q3)}</td>
+                                <td>${formatNumber(stats[col].max)}</td>
+                                <td>${formatNumber(stats[col].skewness)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        }
+
+        if (catCols.length > 0) {
+            html += `
+            <h4 class="mb-2">Categorical Columns</h4>
+            <div class="table-container" style="max-height: 200px;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Column</th>
+                            <th>Count</th>
+                            <th>Unique</th>
+                            <th>Top Value</th>
+                            <th>Frequency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${catCols.map(col => `
+                            <tr>
+                                <td><strong>${col}</strong></td>
+                                <td>${formatNumber(stats[col].count)}</td>
+                                <td>${stats[col].unique}</td>
+                                <td>${stats[col].top || 'N/A'}</td>
+                                <td>${formatNumber(stats[col].freq)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        }
+
+        document.getElementById('statsTable').innerHTML = html;
+    }
+
+    function renderMissingValues() {
+        const missing = edaData.missing_values;
+
+        const infoHtml = `
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon ${missing.total_missing > 0 ? 'accent' : 'success'}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">${formatNumber(missing.total_missing)}</div>
+                    <div class="stat-label">Total Missing</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                        <line x1="12" y1="1" x2="12" y2="23"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">${missing.missing_percentage}%</div>
+                    <div class="stat-label">Missing Percentage</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">${missing.columns_with_missing.length}</div>
+                    <div class="stat-label">Columns Affected</div>
+                </div>
+            </div>
+        </div>
+    `;
+
+        document.getElementById('missingInfo').innerHTML = infoHtml;
+
+        // Create missing values chart
+        createMissingChart('missingChart', currentDatasetId);
+    }
+
+    async function renderCorrelation() {
+        await createHeatmap('correlationChart', currentDatasetId, 'Correlation Matrix');
+    }
+
+    async function renderBoxPlot() {
+        const outliers = edaData.outliers;
+        const cols = Object.keys(outliers);
+
+        if (cols.length === 0) {
+            document.getElementById('outlierInfo').innerHTML = '<p class="text-muted">No numeric columns for outlier detection</p>';
+            return;
+        }
+
+        const highOutlierCols = cols.filter(c => outliers[c].percentage > 1);
+
+        let infoHtml = `<div class="flex gap-2" style="flex-wrap: wrap;">`;
+        cols.forEach(col => {
+            const pct = outliers[col].percentage;
+            const tagClass = pct > 5 ? 'tag-danger' : pct > 1 ? 'tag-warning' : 'tag-success';
+            infoHtml += `<span class="tag ${tagClass}">${col}: ${pct}% outliers</span>`;
+        });
+        infoHtml += `</div>`;
+
+        document.getElementById('outlierInfo').innerHTML = infoHtml;
+
+        await createBoxPlot('boxPlotChart', currentDatasetId, null, 'Outlier Detection (Box Plots)');
+    }
+
+    function populateColumnSelects() {
+        const stats = edaData.descriptive_stats;
+        const columns = Object.keys(stats);
+
+        const numericCols = columns.filter(c => stats[c].mean !== undefined);
+        const allCols = columns;
+
+        // Distribution column
+        const distSelect = document.getElementById('distributionColumn');
+        distSelect.innerHTML = '<option value="">Select column...</option>' +
+            columns.map(c => `<option value="${c}">${c}</option>`).join('');
+
+        // Group by columns
+        const groupSelect = document.getElementById('groupByColumn');
+        groupSelect.innerHTML = '<option value="">Select...</option>' +
+            allCols.map(c => `<option value="${c}">${c}</option>`).join('');
+
+        // Aggregate column
+        const aggSelect = document.getElementById('aggColumn');
+        aggSelect.innerHTML = '<option value="">Select...</option>' +
+            numericCols.map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    async function showDistribution() {
+        const column = document.getElementById('distributionColumn').value;
+        if (!column || !currentDatasetId) return;
+
+        await createHistogram('distributionChart', currentDatasetId, column);
+    }
+
+    async function runGroupBy() {
+        const groupCol = document.getElementById('groupByColumn').value;
+        const aggCol = document.getElementById('aggColumn').value;
+        const aggFunc = document.getElementById('aggFunc').value;
+
+        if (!groupCol || !aggCol || !currentDatasetId) {
+            showToast('Please select all options', 'warning');
+            return;
+        }
+
+        showLoading();
+        try {
+            const result = await apiPost(`/api/eda/${currentDatasetId}/groupby`, {
+                group_col: groupCol,
+                agg_col: aggCol,
+                agg_func: aggFunc
+            });
+
+            if (result.groups && result.values) {
+                createLocalBarChart('groupByChart', result.groups, result.values,
+                    `${aggFunc.charAt(0).toUpperCase() + aggFunc.slice(1)} of ${aggCol} by ${groupCol}`);
+            }
+        } catch (error) {
+            console.error('Group by failed:', error);
+        }
+        hideLoading();
+    }
+</script>
+{% endblock %}

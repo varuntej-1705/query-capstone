@@ -1,0 +1,16 @@
+product_id,product_name,category,brand,unit_price,cost_price,stock_quantity,weight_kg,rating,reviews_count
+P001,Wireless Earbuds Pro,Electronics,SoundTech,299.99,150.00,245,0.05,4.5,1250
+P002,Cotton T-Shirt Classic,Clothing,StyleWear,149.99,60.00,500,0.20,4.2,890
+P003,Organic Face Cream,Beauty,NaturalGlow,199.99,85.00,180,0.10,4.7,2100
+P004,Sports Running Shoes,Footwear,ActiveStep,249.99,120.00,320,0.45,4.4,1560
+P005,Smart Watch Elite,Electronics,TechTime,1499.99,800.00,95,0.08,4.6,3200
+P006,Leather Wallet Premium,Accessories,ClassicStyle,799.99,400.00,150,0.15,4.3,670
+P007,Yoga Mat Professional,Sports,FitLife,449.99,200.00,280,1.20,4.5,890
+P008,Bluetooth Speaker Mini,Electronics,SoundTech,599.99,280.00,175,0.35,4.4,1450
+P009,Denim Jeans Slim Fit,Clothing,StyleWear,899.99,400.00,220,0.55,4.2,1120
+P010,Hair Styling Kit,Beauty,GlamourPro,699.99,350.00,130,0.40,4.6,780
+P011,Fitness Tracker Band,Electronics,TechTime,349.99,150.00,400,0.03,4.3,2300
+P012,Cotton Socks Pack,Clothing,ComfortWear,89.99,35.00,800,0.10,4.1,560
+P013,Electric Trimmer Pro,Electronics,GroomMaster,1899.99,950.00,85,0.25,4.7,1890
+P014,Backpack Travel XL,Accessories,TravelGear,1199.99,550.00,160,0.80,4.5,1340
+P015,Power Bank 20000mAh,Electronics,PowerPlus,2499.99,1200.00,120,0.30,4.6,2800

@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDA Report - EDA Report: play_tennis.csv</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            background: linear-gradient(135deg, #3B5998, #00ACC1);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .header p { opacity: 0.9; }
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .section h2 {
+            color: #3B5998;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .stat-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: #3B5998; }
+        .stat-label { font-size: 0.875rem; color: #64748b; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th { background: #f8fafc; font-weight: 600; }
+        .insight-card {
+            background: #f0f9ff;
+            border-left: 4px solid #00ACC1;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .insight-card.warning { background: #fffbeb; border-left-color: #f59e0b; }
+        .insight-card.success { background: #f0fdf4; border-left-color: #22c55e; }
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>EDA Report: play_tennis.csv</h1>
+            <p>Generated on 2026-01-08 15:39:17</p>
+        </div>
+        
+        <div class="section">
+            <h2>Dataset Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">14</div>
+                    <div class="stat-label">Total Rows</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">Total Columns</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Numeric Columns</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">Categorical Columns</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">0.0%</div>
+                    <div class="stat-label">Missing Data</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Duplicates</div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="section">
+            <h2>Descriptive Statistics</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Mean</th>
+                        <th>Std</th>
+                        <th>Min</th>
+                        <th>Max</th>
+                        <th>Median</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </tbody>
+            </table>
+        </div>
+        
+        
+        
+        
+        
+        <div class="section">
+            <h2>Key Insights</h2>
+            
+            <div class="insight-card info">
+                <strong>Dataset Overview</strong><br>
+                The dataset contains 14 rows and 5 columns, with 0 numeric and 5 categorical features.
+            </div>
+            
+            <div class="insight-card success">
+                <strong>Complete Data</strong><br>
+                No missing values detected in the dataset. Data quality is excellent.
+            </div>
+            
+            <div class="insight-card info">
+                <strong>Low Cardinality Feature</strong><br>
+                'Outlook' has only 3 unique values. Top values: Sunny: 5, Rain: 5, Overcast: 4
+            </div>
+            
+            <div class="insight-card info">
+                <strong>Low Cardinality Feature</strong><br>
+                'Temperature' has only 3 unique values. Top values: Mild: 6, Hot: 4, Cool: 4
+            </div>
+            
+        </div>
+        
+        
+        <div class="footer">
+            <p>Generated by Integrated EDA Application | Capstone Project 2026</p>
+        </div>
+    </div>
+</body>
+</html>
+    

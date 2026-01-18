@@ -1,0 +1,424 @@
+{% extends "base.html" %}
+
+{% block title %}Reports & Export - EDA Application{% endblock %}
+
+{% block content %}
+<div class="header">
+    <div class="header-title">
+        <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"
+                style="vertical-align: middle; margin-right: 8px;">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>Reports & Export</h1>
+        <p>Download analysis reports and cleaned datasets</p>
+    </div>
+</div>
+
+<!-- Dataset Selection -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <path d="M14 2v6h6" />
+            </svg>
+            Select Dataset to Export
+        </h3>
+    </div>
+
+    <div class="form-group">
+        <select class="form-select" id="datasetSelect" style="max-width: 400px;" onchange="selectDataset()">
+            <option value="">Select a dataset...</option>
+        </select>
+    </div>
+
+    <div id="datasetInfo" style="display: none;">
+        <div class="stats-grid" id="selectedDatasetInfo"></div>
+    </div>
+</div>
+
+<!-- Export Options -->
+<div id="exportOptions" style="display: none;">
+    <div class="grid grid-3">
+        <!-- Report Exports -->
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <path d="M14 2v6h6" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                    EDA Reports
+                </h3>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <div class="dataset-card" onclick="downloadHTMLReport()" style="cursor: pointer;">
+                    <div class="dataset-name">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24"
+                            height="24" style="color: var(--accent);">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <path d="M14 2v6h6" />
+                        </svg>
+                        <div>
+                            <strong>HTML Report</strong>
+                            <p class="text-muted" style="font-size: 0.8rem; margin: 0;">Interactive web report with
+                                styling</p>
+                        </div>
+                    </div>
+                    <span class="tag tag-primary">Recommended</span>
+                </div>
+
+                <div class="dataset-card" onclick="downloadJSONReport()" style="cursor: pointer;">
+                    <div class="dataset-name">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24"
+                            height="24" style="color: var(--secondary);">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <path d="M14 2v6h6" />
+                        </svg>
+                        <div>
+                            <strong>JSON Report</strong>
+                            <p class="text-muted" style="font-size: 0.8rem; margin: 0;">Machine-readable format</p>
+                        </div>
+                    </div>
+                    <span class="tag tag-secondary">API/Dev</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Exports -->
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <line x1="3" y1="9" x2="21" y2="9" />
+                        <line x1="9" y1="21" x2="9" y2="9" />
+                    </svg>
+                    Dataset Export
+                </h3>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <div class="dataset-card" onclick="downloadCSV()" style="cursor: pointer;">
+                    <div class="dataset-name">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24"
+                            height="24" style="color: var(--success);">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <path d="M14 2v6h6" />
+                        </svg>
+                        <div>
+                            <strong>CSV File</strong>
+                            <p class="text-muted" style="font-size: 0.8rem; margin: 0;">Cleaned dataset as CSV</p>
+                        </div>
+                    </div>
+                    <span class="tag tag-success">Data</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg>
+                    Export Summary
+                </h3>
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <div class="flex justify-between"
+                    style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                    <span class="text-muted">Total Rows</span>
+                    <strong id="summaryRows">-</strong>
+                </div>
+                <div class="flex justify-between"
+                    style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                    <span class="text-muted">Total Columns</span>
+                    <strong id="summaryCols">-</strong>
+                </div>
+                <div class="flex justify-between"
+                    style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                    <span class="text-muted">Missing Values</span>
+                    <strong id="summaryMissing">-</strong>
+                </div>
+                <div class="flex justify-between" style="padding: 0.5rem 0;">
+                    <span class="text-muted">File Size (Est.)</span>
+                    <strong id="summarySize">-</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Datasets Export -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <path
+                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            </svg>
+            All Datasets
+        </h3>
+    </div>
+
+    <div id="allDatasetsList" class="table-container" style="max-height: 400px;"></div>
+</div>
+
+<!-- Export History / Instructions -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+            </svg>
+            Export Guide
+        </h3>
+    </div>
+
+    <div class="grid grid-3">
+        <div class="insight-card info">
+            <div class="insight-header">
+                <div class="insight-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    </svg>
+                </div>
+                <span class="insight-title">HTML Reports</span>
+            </div>
+            <p class="insight-description">
+                Complete EDA report with statistics, insights, and styled formatting.
+                Best for presentations and documentation.
+            </p>
+        </div>
+
+        <div class="insight-card success">
+            <div class="insight-header">
+                <div class="insight-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                    </svg>
+                </div>
+                <span class="insight-title">CSV Exports</span>
+            </div>
+            <p class="insight-description">
+                Download cleaned datasets with missing values handled and duplicates removed.
+                Ready for further analysis or ML.
+            </p>
+        </div>
+
+        <div class="insight-card warning">
+            <div class="insight-header">
+                <div class="insight-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <line x1="18" y1="20" x2="18" y2="10" />
+                        <line x1="12" y1="20" x2="12" y2="4" />
+                        <line x1="6" y1="20" x2="6" y2="14" />
+                    </svg>
+                </div>
+                <span class="insight-title">Charts</span>
+            </div>
+            <p class="insight-description">
+                Individual charts can be downloaded from the Visualization dashboard.
+                Use the download button on each chart.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentDatasetId = null;
+    let currentDatasetInfo = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadDatasets();
+        await loadAllDatasets();
+    });
+
+    async function loadDatasets() {
+        try {
+            const data = await apiGet('/api/datasets');
+            const select = document.getElementById('datasetSelect');
+            select.innerHTML = '<option value="">Select a dataset...</option>' +
+                (data.datasets || []).map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+        } catch (error) {
+            console.error('Failed to load datasets:', error);
+        }
+    }
+
+    async function loadAllDatasets() {
+        try {
+            const data = await apiGet('/api/datasets');
+            const datasets = data.datasets || [];
+
+            if (datasets.length === 0) {
+                document.getElementById('allDatasetsList').innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="60" height="60">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    </svg>
+                    <h3>No Datasets</h3>
+                    <p>Upload datasets to enable exports</p>
+                </div>
+            `;
+                return;
+            }
+
+            document.getElementById('allDatasetsList').innerHTML = `
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Dataset</th>
+                        <th>Rows</th>
+                        <th>Columns</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${datasets.map(ds => `
+                        <tr>
+                            <td><strong>${ds.name}</strong></td>
+                            <td>${formatNumber(ds.rows)}</td>
+                            <td>${ds.columns}</td>
+                            <td><span class="tag tag-primary">${ds.source_type}</span></td>
+                            <td>
+                                <div class="flex gap-1">
+                                    <button class="btn btn-sm btn-secondary" onclick="quickExport('${ds.id}', 'html')">HTML</button>
+                                    <button class="btn btn-sm btn-secondary" onclick="quickExport('${ds.id}', 'csv')">CSV</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+
+        } catch (error) {
+            console.error('Failed to load all datasets:', error);
+        }
+    }
+
+    async function selectDataset() {
+        const datasetId = document.getElementById('datasetSelect').value;
+
+        if (!datasetId) {
+            document.getElementById('datasetInfo').style.display = 'none';
+            document.getElementById('exportOptions').style.display = 'none';
+            currentDatasetId = null;
+            return;
+        }
+
+        currentDatasetId = datasetId;
+        showLoading();
+
+        try {
+            const data = await apiGet(`/api/datasets/${datasetId}`);
+            currentDatasetInfo = data;
+
+            document.getElementById('datasetInfo').style.display = 'block';
+            document.getElementById('exportOptions').style.display = 'block';
+
+            const info = data.info;
+            const missingTotal = Object.values(info.missing_values).reduce((a, b) => a + b, 0);
+
+            document.getElementById('selectedDatasetInfo').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">${data.name}</div>
+                    <div class="stat-label">Dataset Name</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">${formatNumber(info.rows)} × ${info.columns}</div>
+                    <div class="stat-label">Rows × Columns</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon accent">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">${formatBytes(info.memory_usage * 1024 * 1024)}</div>
+                    <div class="stat-label">Memory Size</div>
+                </div>
+            </div>
+        `;
+
+            // Update summary
+            document.getElementById('summaryRows').textContent = formatNumber(info.rows);
+            document.getElementById('summaryCols').textContent = info.columns;
+            document.getElementById('summaryMissing').textContent = formatNumber(missingTotal);
+            document.getElementById('summarySize').textContent = formatBytes(info.memory_usage * 1024 * 1024);
+
+        } catch (error) {
+            console.error('Failed to load dataset:', error);
+        }
+
+        hideLoading();
+    }
+
+    function downloadHTMLReport() {
+        if (!currentDatasetId) {
+            showToast('Please select a dataset first', 'warning');
+            return;
+        }
+
+        window.location.href = `/api/report/html/${currentDatasetId}`;
+        showToast('Generating HTML report...', 'info');
+    }
+
+    function downloadJSONReport() {
+        if (!currentDatasetId) {
+            showToast('Please select a dataset first', 'warning');
+            return;
+        }
+
+        window.location.href = `/api/report/json/${currentDatasetId}`;
+        showToast('Generating JSON report...', 'info');
+    }
+
+    function downloadCSV() {
+        if (!currentDatasetId) {
+            showToast('Please select a dataset first', 'warning');
+            return;
+        }
+
+        window.location.href = `/api/export/csv/${currentDatasetId}`;
+        showToast('Exporting CSV...', 'info');
+    }
+
+    function quickExport(datasetId, type) {
+        if (type === 'html') {
+            window.location.href = `/api/report/html/${datasetId}`;
+        } else if (type === 'csv') {
+            window.location.href = `/api/export/csv/${datasetId}`;
+        }
+        showToast(`Exporting ${type.toUpperCase()}...`, 'info');
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Insight Summary - EDA Application{% endblock %}
+
+{% block content %}
+<div class="header">
+    <div class="header-title">
+        <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"
+                style="vertical-align: middle; margin-right: 8px;">
+                <path
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>Insight Summary</h1>
+        <p>AI-generated insights and recommendations from your data</p>
+    </div>
+    <div class="header-actions">
+        <select class="form-select" id="datasetSelect" style="min-width: 250px;" onchange="loadInsights()">
+            <option value="">Select a dataset...</option>
+        </select>
+    </div>
+</div>
+
+<!-- No Dataset Message -->
+<div id="noDatasetMessage" class="card">
+    <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+        </svg>
+        <h3>Select a Dataset for Insights</h3>
+        <p>Choose a dataset from the dropdown above to generate AI-powered insights</p>
+        <a href="{{ url_for('dashboard_datasets') }}" class="btn btn-primary mt-2">Upload Dataset</a>
+    </div>
+</div>
+
+<!-- Insights Container -->
+<div id="insightsContainer" style="display: none;">
+    <!-- Key Metrics -->
+    <div class="stats-grid mb-4" id="keyMetrics"></div>
+
+    <!-- Main Insights - Full Width -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <path
+                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                Key Insights
+            </h3>
+        </div>
+        <div id="insightsList"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentDatasetId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadDatasets();
+    });
+
+    async function loadDatasets() {
+        try {
+            const data = await apiGet('/api/datasets');
+            const select = document.getElementById('datasetSelect');
+            select.innerHTML = '<option value="">Select a dataset...</option>' +
+                (data.datasets || []).map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+        } catch (error) {
+            console.error('Failed to load datasets:', error);
+        }
+    }
+
+    async function loadInsights() {
+        const datasetId = document.getElementById('datasetSelect').value;
+
+        if (!datasetId) {
+            document.getElementById('noDatasetMessage').style.display = 'block';
+            document.getElementById('insightsContainer').style.display = 'none';
+            return;
+        }
+
+        currentDatasetId = datasetId;
+        showLoading();
+
+        try {
+            const data = await apiGet(`/api/eda/${datasetId}`);
+
+            document.getElementById('noDatasetMessage').style.display = 'none';
+            document.getElementById('insightsContainer').style.display = 'block';
+
+            renderKeyMetrics(data);
+            renderInsights(data.insights);
+
+            showToast('Insights generated!', 'success');
+
+        } catch (error) {
+            console.error('Failed to load insights:', error);
+        }
+
+        hideLoading();
+    }
+
+    function renderKeyMetrics(data) {
+        const missing = data.missing_values;
+        const stats = data.descriptive_stats;
+        const numCols = Object.keys(stats).filter(k => stats[k].mean !== undefined).length;
+
+        document.getElementById('keyMetrics').innerHTML = `
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">${Object.keys(stats).length}</div>
+                <div class="stat-label">Total Features</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon secondary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+                    <line x1="12" y1="1" x2="12" y2="23"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">${numCols}</div>
+                <div class="stat-label">Numeric Features</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon ${missing.missing_percentage > 5 ? 'accent' : 'success'}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+                    <circle cx="12" cy="12" r="10"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">${missing.missing_percentage}%</div>
+                <div class="stat-label">Data Completeness Gap</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">${(data.correlations.strong_correlations || []).length}</div>
+                <div class="stat-label">Strong Correlations</div>
+            </div>
+        </div>
+    `;
+    }
+
+    function renderInsights(insights) {
+        const container = document.getElementById('insightsList');
+
+        if (!insights || insights.length === 0) {
+            container.innerHTML = '<p class="text-muted">No insights generated</p>';
+            return;
+        }
+
+        container.innerHTML = `
+        <div class="simple-list">
+            ${insights.map((insight, index) => `
+                <div class="simple-list-item">
+                    <div class="simple-list-number">${index + 1}</div>
+                    <div class="simple-list-content">
+                        <div class="simple-list-title">${insight.title}</div>
+                        <div class="simple-list-desc">${insight.description}</div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+        `;
+    }
+
+    function renderCorrelations(corrData) {
+        const container = document.getElementById('correlationsList');
+        const correlations = corrData.strong_correlations || [];
+
+        if (correlations.length === 0) {
+            container.innerHTML = `
+                <div class="simple-list-item" style="border-left-color: var(--text-muted);">
+                    <div class="simple-list-content">
+                        <div class="simple-list-title" style="color: var(--text-muted);">No Strong Correlations Found</div>
+                        <div class="simple-list-desc">No variable pairs have correlation above 0.7 or below -0.7</div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `
+        <div class="simple-list">
+            ${correlations.map(corr => {
+            const isPositive = corr.correlation > 0;
+            return `
+                    <div class="simple-list-item" style="border-left-color: ${isPositive ? 'var(--success)' : 'var(--warning)'};">
+                        <div class="simple-list-content">
+                            <div class="simple-list-title">${corr.column1} ↔ ${corr.column2}</div>
+                            <div class="simple-list-desc">
+                                <span class="tag ${isPositive ? 'tag-success' : 'tag-warning'}">${corr.strength}</span>
+                                <span style="margin-left: 8px;">r = ${corr.correlation.toFixed(3)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        }).join('')}
+        </div>
+        `;
+    }
+
+    function renderBusinessImpact(data) {
+        const impacts = [
+            {
+                icon: 'target',
+                title: 'Strategic Planning',
+                description: 'Use correlation insights to identify key drivers and dependencies in your data for better strategic decisions.'
+            },
+            {
+                icon: 'trending-up',
+                title: 'Predictive Modeling',
+                description: 'Strong correlations indicate potential features for machine learning models and forecasting.'
+            },
+            {
+                icon: 'alert-triangle',
+                title: 'Risk Assessment',
+                description: 'Outliers and missing data patterns help identify data quality risks and anomalies.'
+            },
+            {
+                icon: 'zap',
+                title: 'Operational Efficiency',
+                description: 'Automated EDA saves hours of manual analysis time, enabling faster data-driven decisions.'
+            },
+            {
+                icon: 'users',
+                title: 'Stakeholder Communication',
+                description: 'Interactive visualizations and auto-generated reports facilitate clear communication with stakeholders.'
+            },
+            {
+                icon: 'shield',
+                title: 'Data Quality Assurance',
+                description: 'Comprehensive missing value and duplicate analysis ensures data integrity before further processing.'
+            }
+        ];
+
+        document.getElementById('businessImpact').innerHTML = impacts.map(impact => `
+        <div class="insight-card info">
+            <div class="insight-header">
+                <div class="insight-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                </div>
+                <span class="insight-title">${impact.title}</span>
+            </div>
+            <p class="insight-description">${impact.description}</p>
+        </div>
+    `).join('');
+    }
+
+    function renderQualityChart(data) {
+        const missing = data.missing_values;
+        const completeness = 100 - missing.missing_percentage;
+
+        const darkMode = window.EDA.darkMode;
+        const theme = darkMode ? chartTheme.dark : chartTheme.light;
+
+        const trace = {
+            type: 'indicator',
+            mode: 'gauge+number+delta',
+            value: completeness,
+            title: { text: 'Data Completeness Score', font: { color: theme.text } },
+            delta: { reference: 95, increasing: { color: '#4CAF50' }, decreasing: { color: '#F44336' } },
+            gauge: {
+                axis: { range: [0, 100], tickcolor: theme.text },
+                bar: { color: completeness > 90 ? '#4CAF50' : completeness > 70 ? '#FF9800' : '#F44336' },
+                bgcolor: theme.bg,
+                borderwidth: 2,
+                bordercolor: theme.grid,
+                steps: [
+                    { range: [0, 50], color: 'rgba(244, 67, 54, 0.2)' },
+                    { range: [50, 80], color: 'rgba(255, 152, 0, 0.2)' },
+                    { range: [80, 100], color: 'rgba(76, 175, 80, 0.2)' }
+                ],
+                threshold: {
+                    line: { color: '#4CAF50', width: 4 },
+                    thickness: 0.75,
+                    value: 95
+                }
+            }
+        };
+
+        const layout = {
+            paper_bgcolor: theme.paper,
+            font: { color: theme.text },
+            margin: { t: 50, b: 20, l: 30, r: 30 }
+        };
+
+        Plotly.newPlot('qualityChart', [trace], layout, { responsive: true, displayModeBar: false });
+    }
+</script>
+{% endblock %}

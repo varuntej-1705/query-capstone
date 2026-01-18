@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+
+{% block title %}Dataset Management - EDA Application{% endblock %}
+
+{% block content %}
+<div class="header">
+    <div class="header-title">
+        <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"
+                style="vertical-align: middle; margin-right: 8px;">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+            </svg>Dataset Management</h1>
+        <p>Upload, preview, and manage your datasets</p>
+    </div>
+    <div class="header-actions">
+        <button class="btn btn-primary" onclick="loadSampleDatasets()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <path
+                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            </svg>
+            Load Sample Data
+        </button>
+    </div>
+</div>
+
+<!-- File Upload Area -->
+<div class="card mb-4">
+    <div class="file-upload" id="fileDropzone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        <h4>Drop files here or click to upload</h4>
+        <p>Supports CSV and Excel files (max 16MB each)</p>
+    </div>
+</div>
+
+<!-- Datasets List -->
+<div class="card">
+    <div class="card-header">
+        <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <path d="M14 2v6h6" />
+            </svg>
+            Uploaded Datasets
+        </h3>
+        <span id="datasetCount" class="badge">0</span>
+    </div>
+
+    <div id="datasetsContainer">
+        <div class="empty-state" id="emptyState">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <path d="M14 2v6h6" />
+            </svg>
+            <h3>No Datasets Yet</h3>
+            <p>Upload your first dataset to get started</p>
+        </div>
+
+        <div id="datasetsList" class="grid grid-2" style="display: none;"></div>
+    </div>
+</div>
+
+<!-- Dataset Preview Modal -->
+<div id="previewModal" class="card mt-4" style="display: none;">
+    <div class="card-header">
+        <h3 id="previewTitle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+            </svg>
+            Dataset Preview
+        </h3>
+        <button class="btn btn-sm btn-secondary" onclick="hidePreview()">Close</button>
+    </div>
+
+    <!-- Dataset Info -->
+    <div class="stats-grid mb-4" id="datasetInfo"></div>
+
+    <!-- Data Health Score -->
+    <div class="health-score-section mb-4" id="healthScoreSection" style="display: none;">
+        <h4 class="mb-3">Data Health Score</h4>
+        <div class="health-score-container">
+            <div class="health-score-circle" id="healthScoreCircle">
+                <svg viewBox="0 0 100 100">
+                    <circle class="health-score-bg" cx="50" cy="50" r="45" />
+                    <circle class="health-score-progress" id="healthProgressRing" cx="50" cy="50" r="45"
+                        stroke-dasharray="283" stroke-dashoffset="283" />
+                </svg>
+                <div class="health-score-value">
+                    <span id="healthScoreValue">0</span>
+                    <small id="healthScoreCategory">-</small>
+                </div>
+            </div>
+            <div class="health-score-breakdown" id="healthScoreBreakdown"></div>
+        </div>
+    </div>
+
+    <!-- Column Information -->
+    <h4 class="mb-2">Column Information</h4>
+    <div id="columnInfo" class="mb-4"></div>
+
+    <!-- Data Preview -->
+    <h4 class="mb-2">Data Preview</h4>
+    <div id="dataPreview"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentDatasets = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initFileUpload('fileDropzone', onFileUpload);
+        refreshDatasets();
+    });
+
+    async function onFileUpload(result) {
+        await refreshDatasets();
+        showPreview(result.dataset_id);
+    }
+
+    async function refreshDatasets() {
+        try {
+            const data = await apiGet('/api/datasets');
+            currentDatasets = data.datasets || [];
+            renderDatasets();
+        } catch (error) {
+            console.error('Failed to load datasets:', error);
+        }
+    }
+
+    function renderDatasets() {
+        const container = document.getElementById('datasetsList');
+        const emptyState = document.getElementById('emptyState');
+        const countBadge = document.getElementById('datasetCount');
+
+        countBadge.textContent = currentDatasets.length;
+
+        if (currentDatasets.length === 0) {
+            container.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        container.style.display = 'grid';
+
+        container.innerHTML = currentDatasets.map(ds => `
+        <div class="dataset-card" onclick="showPreview('${ds.id}')">
+            <div class="dataset-header">
+                <div class="dataset-name">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <path d="M14 2v6h6"/>
+                    </svg>
+                    ${ds.name}
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); removeDataset('${ds.id}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="dataset-meta">
+                <span><strong>${formatNumber(ds.rows)}</strong> rows</span>
+                <span><strong>${ds.columns}</strong> columns</span>
+            </div>
+            <div class="mt-2">
+                <span class="tag tag-primary">${ds.source_type}</span>
+            </div>
+        </div>
+    `).join('');
+    }
+
+    async function showPreview(datasetId) {
+        showLoading();
+        try {
+            const data = await apiGet(`/api/datasets/${datasetId}`);
+
+            document.getElementById('previewModal').style.display = 'block';
+            document.getElementById('previewTitle').innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+            ${data.name}
+        `;
+
+            // Render dataset info
+            const info = data.info;
+            document.getElementById('datasetInfo').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <line x1="3" y1="9" x2="21" y2="9"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">${formatNumber(info.rows)}</div>
+                    <div class="stat-label">Rows</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                        <line x1="12" y1="1" x2="12" y2="23"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">${info.columns}</div>
+                    <div class="stat-label">Columns</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon ${Object.values(info.missing_values).reduce((a, b) => a + b, 0) > 0 ? 'accent' : 'success'}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">${Object.values(info.missing_values).reduce((a, b) => a + b, 0)}</div>
+                    <div class="stat-label">Missing Values</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon ${info.duplicates > 0 ? 'accent' : 'success'}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">${info.duplicates}</div>
+                    <div class="stat-label">Duplicates</div>
+                </div>
+            </div>
+        `;
+
+            // Render column info
+            const columns = info.column_names;
+            const colInfoHtml = `
+            <div class="table-container" style="max-height: 200px;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Column</th>
+                            <th>Type</th>
+                            <th>Missing</th>
+                            <th>Missing %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${columns.map(col => `
+                            <tr>
+                                <td><strong>${col}</strong></td>
+                                <td><span class="tag tag-secondary">${info.dtypes[col]}</span></td>
+                                <td>${info.missing_values[col]}</td>
+                                <td>${info.missing_percentage[col]}%</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+            document.getElementById('columnInfo').innerHTML = colInfoHtml;
+
+            // Render data preview
+            renderDataTable('dataPreview', data.preview.columns, data.preview.data, {
+                maxRows: 10,
+                maxHeight: '300px'
+            });
+
+            // Load health score
+            loadHealthScore(datasetId);
+
+        } catch (error) {
+            console.error('Failed to load dataset preview:', error);
+        }
+        hideLoading();
+    }
+
+    async function loadHealthScore(datasetId) {
+        try {
+            const health = await apiGet(`/api/health-score/${datasetId}`);
+            renderHealthScore(health);
+        } catch (error) {
+            console.error('Failed to load health score:', error);
+        }
+    }
+
+    function renderHealthScore(health) {
+        const section = document.getElementById('healthScoreSection');
+        const scoreValue = document.getElementById('healthScoreValue');
+        const scoreCategory = document.getElementById('healthScoreCategory');
+        const progressRing = document.getElementById('healthProgressRing');
+        const breakdownContainer = document.getElementById('healthScoreBreakdown');
+        const circle = document.getElementById('healthScoreCircle');
+
+        section.style.display = 'block';
+
+        // Animate score value
+        const score = health.score;
+        let currentScore = 0;
+        const interval = setInterval(() => {
+            currentScore += 1;
+            if (currentScore >= score) {
+                currentScore = score;
+                clearInterval(interval);
+            }
+            scoreValue.textContent = Math.round(currentScore);
+        }, 15);
+
+        scoreCategory.textContent = health.category;
+
+        // Set color based on score
+        let color = '#ef4444'; // red
+        if (score >= 80) color = '#22c55e'; // green
+        else if (score >= 50) color = '#f59e0b'; // yellow
+
+        circle.style.setProperty('--health-color', color);
+        progressRing.style.stroke = color;
+
+        // Animate progress ring
+        const circumference = 2 * Math.PI * 45;
+        const offset = circumference - (score / 100) * circumference;
+        setTimeout(() => {
+            progressRing.style.strokeDashoffset = offset;
+        }, 100);
+
+        // Render breakdown
+        const components = health.components;
+        breakdownContainer.innerHTML = `
+            <div class="health-breakdown-item">
+                <div class="health-breakdown-header">
+                    <span>Missing Values</span>
+                    <span class="health-breakdown-score">${components.missing_values.score}/100</span>
+                </div>
+                <div class="health-breakdown-bar">
+                    <div class="health-breakdown-fill" style="width: ${components.missing_values.score}%; background: ${getScoreColor(components.missing_values.score)};"></div>
+                </div>
+                <small>${components.missing_values.description}</small>
+            </div>
+            <div class="health-breakdown-item">
+                <div class="health-breakdown-header">
+                    <span>Duplicates</span>
+                    <span class="health-breakdown-score">${components.duplicates.score}/100</span>
+                </div>
+                <div class="health-breakdown-bar">
+                    <div class="health-breakdown-fill" style="width: ${components.duplicates.score}%; background: ${getScoreColor(components.duplicates.score)};"></div>
+                </div>
+                <small>${components.duplicates.description}</small>
+            </div>
+            <div class="health-breakdown-item">
+                <div class="health-breakdown-header">
+                    <span>Outliers</span>
+                    <span class="health-breakdown-score">${components.outliers.score}/100</span>
+                </div>
+                <div class="health-breakdown-bar">
+                    <div class="health-breakdown-fill" style="width: ${components.outliers.score}%; background: ${getScoreColor(components.outliers.score)};"></div>
+                </div>
+                <small>${components.outliers.description}</small>
+            </div>
+            <div class="health-breakdown-item">
+                <div class="health-breakdown-header">
+                    <span>Type Consistency</span>
+                    <span class="health-breakdown-score">${components.consistency.score}/100</span>
+                </div>
+                <div class="health-breakdown-bar">
+                    <div class="health-breakdown-fill" style="width: ${components.consistency.score}%; background: ${getScoreColor(components.consistency.score)};"></div>
+                </div>
+                <small>${components.consistency.description}</small>
+            </div>
+        `;
+    }
+
+    function getScoreColor(score) {
+        if (score >= 80) return '#22c55e';
+        if (score >= 50) return '#f59e0b';
+        return '#ef4444';
+    }
+
+    function hidePreview() {
+        document.getElementById('previewModal').style.display = 'none';
+    }
+
+    async function removeDataset(datasetId) {
+        if (!confirm('Are you sure you want to delete this dataset?')) return;
+
+        const success = await deleteDataset(datasetId);
+        if (success) {
+            await refreshDatasets();
+            hidePreview();
+        }
+    }
+
+    async function loadSampleDatasets() {
+        showLoading();
+        try {
+            const data = await apiGet('/api/sample-datasets');
+
+            if (data.samples && data.samples.length > 0) {
+                for (const sample of data.samples) {
+                    await apiPost(`/api/sample-datasets/${sample.name}/load`);
+                }
+                showToast('Sample datasets loaded!', 'success');
+                await refreshDatasets();
+            } else {
+                showToast('No sample datasets available. Please upload your own data.', 'info');
+            }
+        } catch (error) {
+            showToast('Failed to load sample datasets', 'error');
+        }
+        hideLoading();
+    }
+</script>
+{% endblock %}

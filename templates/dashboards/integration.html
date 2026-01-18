@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}Data Integration - EDA Application{% endblock %}
+
+{% block content %}
+<div class="header">
+    <div class="header-title">
+        <h1><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="28" height="28"
+                style="vertical-align: middle; margin-right: 8px;">
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            </svg>Data Integration & Cleaning</h1>
+        <p>Merge datasets and handle data quality issues</p>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <!-- Merge Section -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <circle cx="18" cy="5" r="3" />
+                    <circle cx="6" cy="12" r="3" />
+                    <circle cx="18" cy="19" r="3" />
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+                Merge Datasets
+            </h3>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">First Dataset</label>
+            <select class="form-select" id="dataset1" onchange="updateCommonColumns()">
+                <option value="">Select dataset...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Second Dataset</label>
+            <select class="form-select" id="dataset2" onchange="updateCommonColumns()">
+                <option value="">Select dataset...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Join Column</label>
+            <select class="form-select" id="joinColumn">
+                <option value="">Select common column...</option>
+            </select>
+            <p class="text-muted mt-1" style="font-size: 0.8rem;" id="commonColumnsHint"></p>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Join Type</label>
+            <select class="form-select" id="joinType">
+                <option value="inner">Inner Join (only matching rows)</option>
+                <option value="left">Left Join (keep all from first)</option>
+                <option value="right">Right Join (keep all from second)</option>
+                <option value="outer">Outer Join (keep all)</option>
+            </select>
+        </div>
+
+        <button class="btn btn-primary" onclick="mergeDatasets()" id="mergeBtn" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+            </svg>
+            Merge Datasets
+        </button>
+    </div>
+
+    <!-- Cleaning Section -->
+    <div class="card">
+        <div class="card-header">
+            <h3>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                Data Cleaning
+            </h3>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Select Dataset to Clean</label>
+            <select class="form-select" id="cleanDataset" onchange="loadDatasetForCleaning()">
+                <option value="">Select dataset...</option>
+            </select>
+        </div>
+
+        <div id="cleaningOptions" style="display: none;">
+            <div class="form-group">
+                <label class="form-label">Missing Value Strategy</label>
+                <select class="form-select" id="missingStrategy">
+                    <option value="drop">Drop rows with missing values</option>
+                    <option value="fill_mean">Fill with mean (numeric columns)</option>
+                    <option value="fill_median">Fill with median (numeric columns)</option>
+                    <option value="fill_mode">Fill with mode (most frequent)</option>
+                    <option value="forward_fill">Forward fill</option>
+                    <option value="backward_fill">Backward fill</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="removeDuplicates" style="width: 18px; height: 18px;">
+                    Remove duplicate rows
+                </label>
+            </div>
+
+            <div id="cleaningInfo" class="mb-4"></div>
+
+            <button class="btn btn-success" onclick="cleanDataset()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                    <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Apply Cleaning
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Result Preview -->
+<div class="card mt-4" id="resultCard" style="display: none;">
+    <div class="card-header">
+        <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+            <span id="resultTitle">Result</span>
+        </h3>
+    </div>
+
+    <div id="resultInfo" class="stats-grid mb-4"></div>
+    <div id="resultPreview"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let datasets = [];
+    let commonColumns = {};
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadDatasetsForIntegration();
+    });
+
+    async function loadDatasetsForIntegration() {
+        try {
+            const data = await apiGet('/api/datasets');
+            datasets = data.datasets || [];
+
+            const options = datasets.map(d => `<option value="${d.id}">${d.name} (${d.rows} rows)</option>`).join('');
+
+            document.getElementById('dataset1').innerHTML = '<option value="">Select dataset...</option>' + options;
+            document.getElementById('dataset2').innerHTML = '<option value="">Select dataset...</option>' + options;
+            document.getElementById('cleanDataset').innerHTML = '<option value="">Select dataset...</option>' + options;
+
+        } catch (error) {
+            console.error('Failed to load datasets:', error);
+        }
+    }
+
+    async function updateCommonColumns() {
+        const ds1 = document.getElementById('dataset1').value;
+        const ds2 = document.getElementById('dataset2').value;
+        const joinColSelect = document.getElementById('joinColumn');
+        const hint = document.getElementById('commonColumnsHint');
+        const mergeBtn = document.getElementById('mergeBtn');
+
+        if (!ds1 || !ds2 || ds1 === ds2) {
+            joinColSelect.innerHTML = '<option value="">Select common column...</option>';
+            hint.textContent = 'Select two different datasets to see common columns';
+            mergeBtn.disabled = true;
+            return;
+        }
+
+        showLoading();
+        try {
+            const data = await apiGet('/api/common-columns');
+            const pair = data.common_columns.find(c =>
+                (c.dataset1 === ds1 && c.dataset2 === ds2) ||
+                (c.dataset1 === ds2 && c.dataset2 === ds1)
+            );
+
+            if (pair && pair.common_columns.length > 0) {
+                joinColSelect.innerHTML = '<option value="">Select common column...</option>' +
+                    pair.common_columns.map(c => `<option value="${c}">${c}</option>`).join('');
+                hint.textContent = `Found ${pair.common_columns.length} common column(s)`;
+                hint.style.color = 'var(--success)';
+                mergeBtn.disabled = false;
+            } else {
+                joinColSelect.innerHTML = '<option value="">No common columns found</option>';
+                hint.textContent = 'These datasets have no common columns for merging';
+                hint.style.color = 'var(--warning)';
+                mergeBtn.disabled = true;
+            }
+        } catch (error) {
+            hint.textContent = 'Error detecting common columns';
+            hint.style.color = 'var(--danger)';
+        }
+        hideLoading();
+    }
+
+    async function mergeDatasets() {
+        const ds1 = document.getElementById('dataset1').value;
+        const ds2 = document.getElementById('dataset2').value;
+        const joinCol = document.getElementById('joinColumn').value;
+        const joinType = document.getElementById('joinType').value;
+
+        if (!ds1 || !ds2 || !joinCol) {
+            showToast('Please select datasets and join column', 'warning');
+            return;
+        }
+
+        showLoading();
+        try {
+            const result = await apiPost('/api/merge', {
+                dataset1_id: ds1,
+                dataset2_id: ds2,
+                join_column: joinCol,
+                join_type: joinType
+            });
+
+            showToast('Datasets merged successfully!', 'success');
+            showResult('Merged Dataset: ' + result.name, result.info, result.preview);
+
+            // Refresh datasets
+            await loadDatasetsForIntegration();
+
+        } catch (error) {
+            console.error('Merge failed:', error);
+        }
+        hideLoading();
+    }
+
+    async function loadDatasetForCleaning() {
+        const dsId = document.getElementById('cleanDataset').value;
+        const optionsDiv = document.getElementById('cleaningOptions');
+        const infoDiv = document.getElementById('cleaningInfo');
+
+        if (!dsId) {
+            optionsDiv.style.display = 'none';
+            return;
+        }
+
+        showLoading();
+        try {
+            const data = await apiGet(`/api/datasets/${dsId}`);
+            optionsDiv.style.display = 'block';
+
+            const missingTotal = Object.values(data.info.missing_values).reduce((a, b) => a + b, 0);
+            const duplicates = data.info.duplicates;
+
+            infoDiv.innerHTML = `
+            <div class="grid grid-2" style="gap: 1rem;">
+                <div class="insight-card ${missingTotal > 0 ? 'warning' : 'success'}">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                        </div>
+                        <span class="insight-title">${formatNumber(missingTotal)} Missing Values</span>
+                    </div>
+                    <p class="insight-description">${missingTotal > 0 ? 'Select a strategy to handle missing data' : 'No missing values found!'}</p>
+                </div>
+                <div class="insight-card ${duplicates > 0 ? 'warning' : 'success'}">
+                    <div class="insight-header">
+                        <div class="insight-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                        </div>
+                        <span class="insight-title">${formatNumber(duplicates)} Duplicate Rows</span>
+                    </div>
+                    <p class="insight-description">${duplicates > 0 ? 'Check the box above to remove duplicates' : 'No duplicates found!'}</p>
+                </div>
+            </div>
+        `;
+
+        } catch (error) {
+            console.error('Failed to load dataset:', error);
+        }
+        hideLoading();
+    }
+
+    async function cleanDataset() {
+        const dsId = document.getElementById('cleanDataset').value;
+        const strategy = document.getElementById('missingStrategy').value;
+        const removeDups = document.getElementById('removeDuplicates').checked;
+
+        if (!dsId) {
+            showToast('Please select a dataset', 'warning');
+            return;
+        }
+
+        showLoading();
+        try {
+            const result = await apiPost('/api/clean', {
+                dataset_id: dsId,
+                missing_strategy: strategy,
+                remove_duplicates: removeDups
+            });
+
+            showToast('Dataset cleaned successfully!', 'success');
+            showResult('Cleaned Dataset', result.info, result.preview);
+
+            // Refresh
+            await loadDatasetForCleaning();
+
+        } catch (error) {
+            console.error('Cleaning failed:', error);
+        }
+        hideLoading();
+    }
+
+    function showResult(title, info, preview) {
+        const card = document.getElementById('resultCard');
+        card.style.display = 'block';
+
+        document.getElementById('resultTitle').textContent = title;
+
+        document.getElementById('resultInfo').innerHTML = `
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">${formatNumber(info.rows)}</div>
+                <div class="stat-label">Rows</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon secondary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                    <line x1="12" y1="1" x2="12" y2="23"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">${info.columns}</div>
+                <div class="stat-label">Columns</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">${Object.values(info.missing_values).reduce((a, b) => a + b, 0)}</div>
+                <div class="stat-label">Missing Values</div>
+            </div>
+        </div>
+    `;
+
+        renderDataTable('resultPreview', preview.columns, preview.data, { maxRows: 10 });
+
+        // Scroll to result
+        card.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+{% endblock %}

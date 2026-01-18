@@ -1,0 +1,183 @@
+{
+  "generated_at": "2026-01-08T21:08:32.215875",
+  "dataset_info": {
+    "rows": 50,
+    "columns": 9,
+    "column_names": [
+      "customer_id",
+      "name",
+      "email",
+      "age",
+      "gender",
+      "city",
+      "registration_date",
+      "is_active",
+      "loyalty_points"
+    ],
+    "dtypes": {
+      "customer_id": "object",
+      "name": "object",
+      "email": "object",
+      "age": "int64",
+      "gender": "object",
+      "city": "object",
+      "registration_date": "object",
+      "is_active": "bool",
+      "loyalty_points": "int64"
+    },
+    "missing_values": {
+      "customer_id": 0,
+      "name": 0,
+      "email": 0,
+      "age": 0,
+      "gender": 0,
+      "city": 0,
+      "registration_date": 0,
+      "is_active": 0,
+      "loyalty_points": 0
+    },
+    "missing_percentage": {
+      "customer_id": 0.0,
+      "name": 0.0,
+      "email": 0.0,
+      "age": 0.0,
+      "gender": 0.0,
+      "city": 0.0,
+      "registration_date": 0.0,
+      "is_active": 0.0,
+      "loyalty_points": 0.0
+    },
+    "memory_usage": 0.01992034912109375,
+    "duplicates": 0,
+    "numeric_columns": [
+      "age",
+      "loyalty_points"
+    ],
+    "categorical_columns": [
+      "customer_id",
+      "name",
+      "email",
+      "gender",
+      "city",
+      "registration_date"
+    ],
+    "datetime_columns": []
+  },
+  "descriptive_statistics": {
+    "age": {
+      "count": 50,
+      "mean": 37.28,
+      "std": 8.8756,
+      "min": 24.0,
+      "max": 56.0,
+      "median": 35.5,
+      "skewness": 0.4381,
+      "kurtosis": -0.9154,
+      "q1": 29.25,
+      "q3": 44.0,
+      "iqr": 14.75,
+      "missing": 0,
+      "unique": 32
+    },
+    "loyalty_points": {
+      "count": 50,
+      "mean": 1206.2,
+      "std": 605.0296,
+      "min": 320.0,
+      "max": 2450.0,
+      "median": 1120.0,
+      "skewness": 0.3843,
+      "kurtosis": -0.9572,
+      "q1": 697.5,
+      "q3": 1670.0,
+      "iqr": 972.5,
+      "missing": 0,
+      "unique": 20
+    },
+    "customer_id": {
+      "count": 50,
+      "unique": 50,
+      "top": "C001",
+      "freq": 1,
+      "missing": 0
+    },
+    "name": {
+      "count": 50,
+      "unique": 50,
+      "top": "Aarti Shah",
+      "freq": 1,
+      "missing": 0
+    },
+    "email": {
+      "count": 50,
+      "unique": 50,
+      "top": "aarti.s@email.com",
+      "freq": 1,
+      "missing": 0
+    },
+    "gender": {
+      "count": 50,
+      "unique": 2,
+      "top": "Female",
+      "freq": 25,
+      "missing": 0
+    },
+    "city": {
+      "count": 50,
+      "unique": 10,
+      "top": "Ahmedabad",
+      "freq": 5,
+      "missing": 0
+    },
+    "registration_date": {
+      "count": 50,
+      "unique": 50,
+      "top": "2023-01-08",
+      "freq": 1,
+      "missing": 0
+    }
+  },
+  "correlations": {
+    "matrix": {
+      "age": {
+        "age": 1.0,
+        "loyalty_points": 0.4875
+      },
+      "loyalty_points": {
+        "age": 0.4875,
+        "loyalty_points": 1.0
+      }
+    },
+    "columns": [
+      "age",
+      "loyalty_points"
+    ],
+    "strong_correlations": []
+  },
+  "insights": [
+    {
+      "type": "info",
+      "icon": "database",
+      "title": "Dataset Overview",
+      "description": "The dataset contains 50 rows and 9 columns, with 2 numeric and 6 categorical features."
+    },
+    {
+      "type": "success",
+      "icon": "check-circle",
+      "title": "Complete Data",
+      "description": "No missing values detected in the dataset. Data quality is excellent."
+    },
+    {
+      "type": "info",
+      "icon": "key",
+      "title": "Potential ID Column",
+      "description": "'customer_id' has all unique values. This might be an identifier column."
+    },
+    {
+      "type": "info",
+      "icon": "key",
+      "title": "Potential ID Column",
+      "description": "'name' has all unique values. This might be an identifier column."
+    }
+  ]
+}
